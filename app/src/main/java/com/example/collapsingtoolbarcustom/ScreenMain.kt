@@ -15,45 +15,58 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+
 import kotlin.math.max
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CollapsibleHeaderScreen() {
-    val listState = rememberLazyListState() //inner Android function, remember scroll state
-    val items = remember { List(100) { "Item ${it + 1}" } } // Список с примерными элементами
+    val listState = rememberLazyListState()
+    val items = remember { List(100) { "Item ${it + 1}" } }
 
-    // Header size logic
-    val scrollOffset = remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
     val maxHeaderHeight = 150.dp
-    val minHeaderHeight = 56.dp
-    val headerHeight = (maxHeaderHeight - (scrollOffset.value / 5).dp).coerceAtLeast(minHeaderHeight)
+    val minHeaderHeight = 66.dp
 
-    // Tracking max scroll position
+    // Отслеживаем максимальную позицию скролла
     val maxScrollOffset = remember { mutableStateOf(0) }
 
-    // Логика для счётчика скроллинга
-    val scrolledItems = remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    // Вычисляем высоту заголовка на основе максимальной позиции скролла
+    val headerHeight by derivedStateOf {
+        if (listState.firstVisibleItemIndex == 0) {
+            maxScrollOffset.value = max(maxScrollOffset.value, listState.firstVisibleItemScrollOffset)
+            max(maxHeaderHeight - (maxScrollOffset.value / 5).dp, minHeaderHeight)
+        } else {
+            minHeaderHeight
+        }
+    }
+
+    // Сбрасываем maxScrollOffset если вернулись к первому элементу
+    LaunchedEffect(listState.firstVisibleItemIndex) {
+        if (listState.firstVisibleItemIndex == 0) {
+            maxScrollOffset.value = 0
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Scrolled: ${scrolledItems.value}",
-                        fontSize = headerHeight.value.sp/3,
-                        modifier = Modifier.padding(top = 24.dp)
+                        modifier = Modifier.padding(top = 20.dp),
+                        text = "Scrolled: ${listState.firstVisibleItemIndex}",
+                        fontSize = headerHeight.value.sp/4
                     )
                 },
-                modifier = Modifier
-                    .height(headerHeight)
-                    .background(MaterialTheme.colorScheme.primary),
+                modifier = Modifier.height(headerHeight).background(Color.Cyan),
+//                backgroundColor = MaterialTheme.colors.primary
             )
         }
-    ) {//A list of our items, it can be very long
+    ) {
         LazyColumn(state = listState) {
             items(items) { item ->
                 ListItem(item)
@@ -68,7 +81,7 @@ fun ListItem(item: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+            elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Box(modifier = Modifier.padding(24.dp)) {
             Text(text = item)
