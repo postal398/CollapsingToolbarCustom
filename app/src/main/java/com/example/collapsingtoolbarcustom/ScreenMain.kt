@@ -49,6 +49,16 @@ fun CollapsibleHeaderScreen() {
         }
     }
 
+    // Отслеживаем предыдущее значение firstVisibleItemIndex
+    var previousFirstVisibleItemIndex by remember { mutableStateOf(0) }
+
+    // Проверяем, если пользователь скроллит вверх и firstVisibleItemIndex уменьшается
+    val currentFirstVisibleItemIndex = listState.firstVisibleItemIndex
+    if (currentFirstVisibleItemIndex < previousFirstVisibleItemIndex) {
+        // Выполните требуемые действия здесь
+        println("Scrolling up from $previousFirstVisibleItemIndex to $currentFirstVisibleItemIndex")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
