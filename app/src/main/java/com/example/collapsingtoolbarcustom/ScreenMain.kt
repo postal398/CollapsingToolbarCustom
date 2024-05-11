@@ -1,4 +1,7 @@
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,7 +26,9 @@ import kotlin.math.max
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CollapsibleHeaderScreen() {
+    // Тут содержится инфа об лэйзи листе - скроллится ли он, можно ли ещё вверх-вниз, первый видимый элемент
     val listState = rememberLazyListState()
+
     val items = remember { List(100) { "Item ${it + 1}" } }
 
     val maxHeaderHeight = 150.dp
@@ -32,45 +37,54 @@ fun CollapsibleHeaderScreen() {
     // Отслеживаем максимальную позицию скролла
     val maxScrollOffset = remember { mutableStateOf(0) }
 
-    // Вычисляем высоту заголовка на основе максимальной позиции скролла
-    val headerHeight by derivedStateOf {
-        if (listState.firstVisibleItemIndex == 0) {
+    //Отслеживаем предыдущую позицию скроллла
+    var previousScrollOffset = remember { 0 }
+
+    // Управление высотой заголовка
+    val targetHeight  by derivedStateOf {
+
+        val scrollUp = listState.firstVisibleItemScrollOffset < previousScrollOffset
+        previousScrollOffset = listState.firstVisibleItemScrollOffset
+
+        if (scrollUp || listState.firstVisibleItemIndex == 0) {
+            //обновляется максимальное смещение скролла
             maxScrollOffset.value = max(maxScrollOffset.value, listState.firstVisibleItemScrollOffset)
+            //Чем больше пользователь скроллит вниз, тем больше maxScrollOffset.value и тем меньше высота заголовка.
+            // Однако высота заголовка не может быть меньше minHeaderHeight.
             max(maxHeaderHeight - (maxScrollOffset.value / 5).dp, minHeaderHeight)
         } else {
             minHeaderHeight
         }
     }
 
-    // Сбрасываем maxScrollOffset если вернулись к первому элементу
+//    val headerHeight  = animateDpAsState(
+//        targetValue = targetHeight ,
+//        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing), label = ""
+//    )
+
+
+    // Сбрасываем maxScrollOffset если вернулись к первому элементу.
+    //Эффект будет запускаться при изменении listState.firstVisibleItemIndex, то есть когда меняется
+    // индекс первого видимого элемента в LazyColumn.
     LaunchedEffect(listState.firstVisibleItemIndex) {
         if (listState.firstVisibleItemIndex == 0) {
             maxScrollOffset.value = 0
         }
     }
 
-    // Отслеживаем предыдущее значение firstVisibleItemIndex
-    var previousFirstVisibleItemIndex by remember { mutableStateOf(0) }
 
-    // Проверяем, если пользователь скроллит вверх и firstVisibleItemIndex уменьшается
-    val currentFirstVisibleItemIndex = listState.firstVisibleItemIndex
-    if (currentFirstVisibleItemIndex < previousFirstVisibleItemIndex) {
-        // Выполните требуемые действия здесь
-        println("Scrolling up from $previousFirstVisibleItemIndex to $currentFirstVisibleItemIndex")
-    }
-
+//Просто графон
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         modifier = Modifier.padding(top = 20.dp),
-                        text = "Scrolled: ${listState.firstVisibleItemIndex}",
-                        fontSize = headerHeight.value.sp/4
+                        text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${previousScrollOffset}",
+                        fontSize = targetHeight.value.sp / 4
                     )
                 },
-                modifier = Modifier.height(headerHeight).background(Color.Cyan),
-//                backgroundColor = MaterialTheme.colors.primary
+                modifier = Modifier.height(targetHeight).background(Color.Cyan),
             )
         }
     ) {
