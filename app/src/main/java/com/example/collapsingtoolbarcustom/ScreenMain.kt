@@ -31,8 +31,8 @@ fun CollapsibleHeaderScreen() {
 
     val items = remember { List(100) { "Item ${it + 1}" } }
 
-    val maxHeaderHeight = 150.dp
-    val minHeaderHeight = 66.dp
+    val maxHeaderHeight = 160.dp
+    val minHeaderHeight = 76.dp
 
     // Отслеживаем максимальную позицию скролла
     val maxScrollOffset = remember { mutableStateOf(0) }
@@ -57,21 +57,6 @@ fun CollapsibleHeaderScreen() {
         }
     }
 
-//    val headerHeight  = animateDpAsState(
-//        targetValue = targetHeight ,
-//        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing), label = ""
-//    )
-
-
-    // Сбрасываем maxScrollOffset если вернулись к первому элементу.
-    //Эффект будет запускаться при изменении listState.firstVisibleItemIndex, то есть когда меняется
-    // индекс первого видимого элемента в LazyColumn.
-    LaunchedEffect(listState.firstVisibleItemIndex) {
-        if (listState.firstVisibleItemIndex == 0) {
-            maxScrollOffset.value = 0
-        }
-    }
-
 
 //Просто графон
     Scaffold(
@@ -79,7 +64,7 @@ fun CollapsibleHeaderScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        modifier = Modifier.padding(top = 20.dp),
+                        modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
                         text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${previousScrollOffset}",
                         fontSize = targetHeight.value.sp / 4
                     )
