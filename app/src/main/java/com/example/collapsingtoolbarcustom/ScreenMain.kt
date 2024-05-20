@@ -32,7 +32,7 @@ fun CollapsibleHeaderScreen() {
     val items = remember { List(100) { "Item ${it + 1}" } }
 
     val maxHeaderHeight = 160.dp
-    val minHeaderHeight = 76.dp
+    val minHeaderHeight = 90.dp
 
     // Отслеживаем максимальную позицию скролла
     val maxScrollOffset = remember { mutableStateOf(0) }
@@ -64,7 +64,7 @@ fun CollapsibleHeaderScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        modifier = Modifier.padding(top = 20.dp, bottom = 20.dp),
+                        modifier = Modifier.padding(top = 35.dp, bottom = 0.dp),
                         text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${previousScrollOffset}",
                         fontSize = targetHeight.value.sp / 4
                     )
@@ -73,7 +73,7 @@ fun CollapsibleHeaderScreen() {
             )
         }
     ) {
-        LazyColumn(state = listState) {
+        LazyColumn(state = listState, contentPadding = PaddingValues(top = maxHeaderHeight)) {
             items(items) { item ->
                 ListItem(item)
             }
