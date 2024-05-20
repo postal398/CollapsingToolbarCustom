@@ -1,4 +1,5 @@
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -44,7 +45,7 @@ fun CollapsibleHeaderScreen() {
     val targetHeight  by derivedStateOf {
 
         val scrollUp = listState.firstVisibleItemScrollOffset < previousScrollOffset
-        previousScrollOffset = listState.firstVisibleItemScrollOffset
+        previousScrollOffset = listState.firstVisibleItemScrollOffset //запоминаем первый видимый элемент
 
         if (scrollUp || listState.firstVisibleItemIndex == 0) {
             //обновляется максимальное смещение скролла
@@ -57,6 +58,8 @@ fun CollapsibleHeaderScreen() {
         }
     }
 
+    val myOffsetTAG = "myOffsetTag"
+    Log.d(myOffsetTAG, "myVariable: ${maxScrollOffset.value}")
 
 //Просто графон
     Scaffold(
@@ -65,7 +68,7 @@ fun CollapsibleHeaderScreen() {
                 title = {
                     Text(
                         modifier = Modifier.padding(top = 35.dp, bottom = 0.dp),
-                        text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${previousScrollOffset}",
+                        text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${maxScrollOffset.value}",
                         fontSize = targetHeight.value.sp / 4
                     )
                 },
@@ -73,7 +76,7 @@ fun CollapsibleHeaderScreen() {
             )
         }
     ) {
-        LazyColumn(state = listState, contentPadding = PaddingValues(top = maxHeaderHeight)) {
+        LazyColumn(state = listState, contentPadding = PaddingValues(top = maxHeaderHeight, bottom = 50.dp)) {
             items(items) { item ->
                 ListItem(item)
             }
