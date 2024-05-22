@@ -35,11 +35,52 @@ fun CollapsibleHeaderScreen() {
     val maxHeaderHeight = 160.dp
     val minHeaderHeight = 90.dp
 
+    //БАЗА!
+    // listState.firstVisibleItemScrollOffset - скролл внутри отдельно взятого айтема
+    //listState.firstVisibleItemIndex - первый видимый элемент внутри списка
+    //listState.layoutInfo.viewportSize.height - высота видимой области (viewport) списка в пикселях, на пикселе 3120
+
+
+
     // Отслеживаем максимальную позицию скролла
     val maxScrollOffset = remember { mutableStateOf(0) }
 
     //Отслеживаем предыдущую позицию скроллла
     var previousScrollOffset = remember { 0 }
+
+
+
+    var volumeOfOffset = remember { true }
+    val volumeOfOffsetTAG = "currentScrollOffset"
+    Log.d(volumeOfOffsetTAG, "Вниз или вверх: ${volumeOfOffset}")
+
+
+    // Отслеживание изменений состояния прокрутки путём
+    //Умножения первого видимого элемента списка на  высоту видимой области и прибавки скролла одного итема
+    LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
+        val currentScrollOffset = listState.firstVisibleItemIndex * listState.layoutInfo.viewportSize.height + listState.firstVisibleItemScrollOffset
+
+        volumeOfOffset = if (currentScrollOffset > previousScrollOffset) {
+            volumeOfOffset
+        } else if (currentScrollOffset < previousScrollOffset) {
+            !volumeOfOffset
+        } else {
+            volumeOfOffset
+        }
+
+
+
+//         Обновление предыдущего смещения скролла
+        previousScrollOffset = currentScrollOffset
+
+        val myOffsetTAG = "currentScrollOffset"
+        Log.d(myOffsetTAG, "Общий счётчик скролла: ${currentScrollOffset}")
+
+        val previosOffsetTag = "previosOffsetTag"
+        Log.d(previosOffsetTag, "Предыдущий оффсет: ${previousScrollOffset}")
+    }
+
+
 
     // Управление высотой заголовка
     val targetHeight  by derivedStateOf {
@@ -58,8 +99,7 @@ fun CollapsibleHeaderScreen() {
         }
     }
 
-    val myOffsetTAG = "myOffsetTag"
-    Log.d(myOffsetTAG, "myVariable: ${maxScrollOffset.value}")
+
 
 //Просто графон
     Scaffold(
@@ -68,11 +108,13 @@ fun CollapsibleHeaderScreen() {
                 title = {
                     Text(
                         modifier = Modifier.padding(top = 35.dp, bottom = 0.dp),
-                        text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${maxScrollOffset.value}",
+                        text = "Scrolled: ${listState.firstVisibleItemIndex} и пред. ${"тест"}",
                         fontSize = targetHeight.value.sp / 4
                     )
                 },
-                modifier = Modifier.height(targetHeight).background(Color.Cyan),
+                modifier = Modifier
+                    .height(targetHeight)
+                    .background(Color.Cyan),
             )
         }
     ) {
